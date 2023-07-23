@@ -4,6 +4,7 @@ from mptt.fields import TreeForeignKey
 from django.urls import reverse
 from PIL import Image
 from django.utils.translation import gettext as _ 
+from django.utils.safestring import mark_safe
 
 
 class category(MPTTModel):
@@ -49,8 +50,8 @@ class product_image(models.Model):
     def __str__(self):
         return self.product
 
-    def get_absolute_url(self):
-        return reverse("product_Image_detail", kwargs={"pk": self.pk})
+    # def get_absolute_url(self):
+    #     return reverse("product_Image_detail", kwargs={"pk": self.pk})
 
 
 class product(models.Model):
@@ -64,14 +65,15 @@ class product(models.Model):
         ('Size', 'Size'),
         ('Color', 'Color'),
         ('Size-Color', 'Size-Color'),
-
     )
+
     product_code = models.CharField(max_length=50,unique=True,verbose_name= _("Code"))
     product_category = models.ForeignKey(category, on_delete=models.CASCADE, verbose_name= _("Category"))
     product_name_english = models.CharField(max_length=150,verbose_name= _("Name English"))
     product_name_arabic = models.CharField(max_length=150,verbose_name= _("Name Arabic"))
     product_description_englih = models.TextField(max_length=255,verbose_name= _("Description EN"))
     product_description_arabic = models.TextField(max_length=255,verbose_name= _("Description AR"))
+    product_main_imge = models.ImageField(upload_to='product main imge/', null=False, height_field=None, width_field=None,verbose_name= _("Main Image"))
     product_cost = models.DecimalField(max_digits=5, decimal_places=2,verbose_name= _("Cost"))
     product_price = models.DecimalField(max_digits=5, decimal_places=2, verbose_name= _("Price"))
     product_price_after_discount = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name=_("Price Ater Discount"))
@@ -111,16 +113,20 @@ class color(models.Model):
 
     def __str__(self):
         return self.color_name
+    
+    def color_tag(self):
+        if self.color_code is not None:
+            return mark_safe('<p style="background-color:{}" >Color</p>'.format(self.color_code))
+        else:
+            return ""
 
-    def get_absolute_url(self):
-        return reverse("Color_detail", kwargs={"pk": self.pk})
 
 
 
 
 class size(models.Model):
-    size_name = models.CharField(max_length=20, verbose_name=_("Color Name"))
-    size_code = models.CharField(max_length=10,blank=True, null=True, verbose_name=_("Color Code"))
+    size_name = models.CharField(max_length=20, verbose_name=_("Size Name"))
+    size_code = models.CharField(max_length=10,blank=True, null=True, verbose_name=_("Size Code"))
    
 
     class Meta:
@@ -132,6 +138,7 @@ class size(models.Model):
 
     def get_absolute_url(self):
         return reverse("size_detail", kwargs={"pk": self.pk})
+    
 
 class variant(models.Model):
     variant_product = models.ForeignKey(product, on_delete=models.CASCADE, verbose_name=_("Product"))
